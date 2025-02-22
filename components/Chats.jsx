@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/Searchbar";
 import ProfileCard from "@/components/ProfileCard";
-import { MdGroupAdd } from "react-icons/md";
+import CreateGroup from "./CreateGroup";
 
 const mockGroups = [
     { _id: "1", name: "Developers Hub", profile_pic: "https://wallpapers.com/images/featured/cute-profile-picture-s52z1uggme5sj92d.jpg" },
@@ -28,9 +28,7 @@ export default function Chats() {
 
             <div className="flex justify-between items-center text-blue-600 text-lg font-semibold mb-4 mt-4">
                 <h2>Groups</h2>
-                <div className="cursor-pointer text-xl hover:text-2xl">
-                <MdGroupAdd />
-                </div>
+                <CreateGroup/>
             </div>
             <div className="space-y-2">
                 {mockGroups.map((group) => (
