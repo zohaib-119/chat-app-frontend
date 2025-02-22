@@ -11,6 +11,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect } from "react/cjs/react.production";
+import axios from "axios";
+import ProfileCard from "@/components/ProfileCard";
 
 const mockUsers = [
   { id: 1, name: "John Doe" },
@@ -33,10 +36,18 @@ const GroupCreationPopover = () => {
   const [groupName, setGroupName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  const filteredUsers = mockUsers.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  async function fetchUser() {
+    const resposne = await axios.get(`http://localhost:5000/api/users?limit=5&searchByName=${searchTerm}`);
+    // if response okay then response.users would have users
+  }
+
+  useEffect(() => {
+    if(searchTerm){
+      fetchUser();
+    }
+  }, [searchTerm]);
 
   const toggleUserSelection = (id) => {
     setSelectedUsers((prev) =>
@@ -75,16 +86,17 @@ const GroupCreationPopover = () => {
             mb="2"
           />
           <VStack align="start" spacing="1" maxH="150px" overflowY="auto">
-            {filteredUsers.map((user) => (
-              <Checkbox
-                key={user.id}
-                isChecked={selectedUsers.includes(user.id)}
-                onChange={() => toggleUserSelection(user.id)}
-              >
-                {user.name}
-              </Checkbox>
+            {users.map((user) => (
+                <ProfileCard 
+                name={user.name}
+                image={user.profile_pic}
+                className={`${selectedUsers.contains(user.id) ? '' : 'border-blue-500 border-2'}`}
+              />
             ))}
           </VStack>
+          {selectedUsers && <div>
+            Selected Users: {selectedUsers.length}
+          </div>}
           <div className="flex justify-end mt-4 gap-2">
             <Button size="sm" colorScheme="gray" variant="outline">
               Cancel
