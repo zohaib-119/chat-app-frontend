@@ -2,13 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/Searchbar";
-import ProfileCard from "@/components/ProfileCard";
-import CreateGroup from "./CreateGroup";
-
-const mockGroups = [
-    { _id: "1", name: "Developers Hub", profile_pic: "https://wallpapers.com/images/featured/cute-profile-picture-s52z1uggme5sj92d.jpg" },
-    { _id: "2", name: "Gaming Squad", profile_pic: "https://wallpapers.com/images/featured/cute-profile-picture-s52z1uggme5sj92d.jpg" },
-];
+import UserCard from "@/components/UserCard";
+import { useState } from "react";
 
 const mockUsers = [
     { _id: "3", name: "Muhammad Zohaib", profile_pic: "https://wallpapers.com/images/featured/cute-profile-picture-s52z1uggme5sj92d.jpg" },
@@ -16,41 +11,37 @@ const mockUsers = [
 ];
 
 export default function Chats() {
+    const [search, setSearch] = useState('');
     const pathname = usePathname();
 
-    // Extract ID from URL (e.g., "/chat/1" → "1", "/group/2" → "2")
+    // Extract ID from URL
     const selectedId = pathname.split("/").pop();
-    const isIdPresent = !isNaN(Number(selectedId)); // Check if it's a valid ID
+    const isIdPresent = Boolean(selectedId); 
+
+    // Filter users based on search input (case insensitive)
+    const filteredUsers = mockUsers.filter((user) =>
+        user.name.toLowerCase().includes(search.trim().toLowerCase())
+    );
 
     return (
         <aside className="w-full bg-white border-r shadow-md p-4 overflow-y-auto h-screen sm:w-80">
-            <SearchBar />
-
-            <div className="flex justify-between items-center text-blue-600 text-lg font-semibold mb-4 mt-4">
-                <h2>Groups</h2>
-                <CreateGroup/>
-            </div>
-            <div className="space-y-2">
-                {mockGroups.map((group) => (
-                    <ProfileCard
-                        key={group._id}
-                        name={group.name}
-                        image={group.profile_pic}
-                        className={isIdPresent && group._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
-                    />
-                ))}
-            </div>
-
-            <h2 className="text-lg font-semibold text-blue-600 mt-6 mb-4">Users</h2>
-            <div className="space-y-2">
-                {mockUsers.map((user) => (
-                    <ProfileCard
-                        key={user._id}
-                        name={user.name}
-                        image={user.profile_pic}
-                        className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
-                    />
-                ))}
+            <SearchBar
+                value={search}
+                onChange={(value) => setSearch(value)}
+            />
+            <div className="space-y-2 mt-5">
+                {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                        <UserCard
+                            key={user._id}
+                            name={user.name}
+                            image={user.profile_pic}
+                            className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
+                        />
+                    ))
+                ) : (
+                    <p className="text-gray-500 text-center">No users found</p>
+                )}
             </div>
         </aside>
     );
