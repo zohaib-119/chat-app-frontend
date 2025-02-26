@@ -29,6 +29,8 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for online users
     _socket.on("getOnlineUsers", (users) => {
+      console.log('update');
+      console.log(users);
       setOnlineUsers(users);
     });
   };

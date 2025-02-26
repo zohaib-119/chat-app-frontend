@@ -10,7 +10,7 @@ export default function AuthPage() {
 
   const router = useRouter();
 
-  const { setUser } = useAuth();
+  const { setUser, setIsAuthenticated } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,6 +59,7 @@ export default function AuthPage() {
 
         if (response.data.success) {
           setUser(response.data.user);
+          setIsAuthenticated(true);
           router.replace('/main');
         } else {
           toaster.create({
@@ -83,6 +84,7 @@ export default function AuthPage() {
 
         if (response.data.success) {
           setUser(response.data.user);
+          setIsAuthenticated(true);
           router.replace('/main');
         } else {
           toaster.create({
