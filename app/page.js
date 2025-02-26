@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { toaster } from "@/components/ui/toaster";
 import axios from 'axios'
-import { useUser } from "@/context/userContext";
+import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
 
   const router = useRouter();
 
-  const { setUser } = useUser();
+  const { setUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,48 +54,48 @@ export default function AuthPage() {
 
       try {
         const response = await axios.post('http://localhost:5000/api/auth/login', {
-            email, password
+          email, password
         }, { withCredentials: true });
-    
-        if (response.data.success) { 
-            setUser(response.data.user);
-            router.replace('/chats');
+
+        if (response.data.success) {
+          setUser(response.data.user);
+          router.replace('/main');
         } else {
-            toaster.create({
-                title: response.data.message,
-                type: 'error',
-            });
-        }
-    } catch (error) {
-        toaster.create({
-            title: error.response?.data?.message || "Something went wrong",
+          toaster.create({
+            title: response.data.message,
             type: 'error',
+          });
+        }
+      } catch (error) {
+        toaster.create({
+          title: error.response?.data?.message || "Something went wrong",
+          type: 'error',
         });
-    }
+      }
 
     } else {
       console.log("Signing up with", { username, email, password });
 
       try {
         const response = await axios.post('http://localhost:5000/api/auth/signup', {
-            email, password, name: username
+          email, password, username
         }, { withCredentials: true });
-    
-        if (response.data.success) { 
-            setUser(response.data.user);
-            router.replace('/chats');
+
+        if (response.data.success) {
+          setUser(response.data.user);
+          router.replace('/main');
         } else {
-            toaster.create({
-                title: response.data.message,
-                type: 'error',
-            });
-        }
-    } catch (error) {
-        toaster.create({
-            title: error.response?.data?.message || "Something went wrong",
+          toaster.create({
+            title: response.data.message,
             type: 'error',
+          });
+        }
+      } catch (error) {
+        toaster.create({
+          title: error.response?.data?.message || "Something went wrong",
+          type: 'error',
         });
-    }
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 import "./globals.css";
 import { Provider } from "@/components/ui/provider"
 import { Toaster } from "@/components/ui/toaster";
-import { UserProvider } from "@/context/userContext";
+import { AuthProvider } from "@/context/authContext";
 
 
 export const metadata = {
@@ -13,12 +13,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <UserProvider>
+        <AuthProvider>
           <Provider>
             {children}
             <Toaster />
           </Provider>
-        </UserProvider>
+        </AuthProvider>
       </body>
     </html>
   );
