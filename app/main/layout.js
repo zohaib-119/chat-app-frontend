@@ -34,7 +34,7 @@ export default function Layout({ children }) {
   }, []);
 
   if (!user)
-    return <Loading />
+    return <Loading text='Loading, Please wait...' />
 
   return (
     <div className="h-screen flex flex-col bg-gray-100">

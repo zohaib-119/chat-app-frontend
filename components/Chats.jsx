@@ -82,6 +82,7 @@ export default function Chats() {
                             chatUsers.map((user) => (
                                 <UserCard
                                     key={user._id}
+                                    id={user._id}
                                     name={user.username}
                                     image={user.profile_pic}
                                     online={onlineUsers.includes(user._id)}
@@ -102,6 +103,7 @@ export default function Chats() {
                             chatUsers.filter(user => unseenChats.includes(user._id)).map((user) => (
                                 <UserCard
                                     key={user._id}
+                                    id={user._id}
                                     name={user.username}
                                     image={user.profile_pic}
                                     unread={unseenChats.includes(user._id)}
@@ -125,6 +127,7 @@ export default function Chats() {
                             searchedUsers.map((user) => (
                                 <UserCard
                                     key={user._id}
+                                    id={user._id}
                                     name={user.username}
                                     image={user.profile_pic}
                                     online={onlineUsers.includes(user._id)}

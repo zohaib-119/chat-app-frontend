@@ -1,22 +1,18 @@
 'use client';
+import Loading from '@/components/Loading';
 import { useState, useEffect, useRef } from 'react';
-
-const mockUser = {
-  _id: '3',
-  name: 'Muhammad Zohaib',
-  profile_pic: 'https://wallpapers.com/images/featured/cute-profile-picture-s52z1uggme5sj92d.jpg',
-};
-
-const mockChats = [
-  { _id: '1', text: 'Hey, how are you?', sender_id: '3', receiver_id: '4', created_at: '10:30 AM' },
-  { _id: '2', text: "I'm good! What about you?", sender_id: '4', receiver_id: '3', created_at: '10:31 AM' },
-  { _id: '3', text: 'All good, just working on a project.', sender_id: '3', receiver_id: '4', created_at: '10:32 AM' },
-];
+import { toaster } from '@/components/ui/toaster';
+import { useParams } from 'next/navigation';
+import axios from 'axios';
 
 export default function ChatWindow() {
-  const [chats, setChats] = useState(mockChats);
-  const [message, setMessage] = useState("");
+  const [chatPartner, setChatPartner] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(true);
   const chatContainerRef = useRef(null);
+
+  const { id } = useParams();
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -25,40 +21,83 @@ export default function ChatWindow() {
     }
   };
 
+  function formatCustomTime(isoString) {
+    const date = new Date(isoString);
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12 || 12; // Convert 24-hour time to 12-hour format
+
+    return `${hours}:${minutes} ${ampm}`;
+  }
+
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/message/messages/${id}`, { withCredentials: true });
+
+        if (response.data.success) {
+          setChatPartner(response.data.chatUser);
+          setMessages(response.data.chatMessages);
+          setLoading(false);
+        } else {
+          toaster.create({
+            title: response.data.message,
+            type: 'error',
+          });
+        }
+      } catch (error) {
+        toaster.create({
+          title: error.response?.data?.message || "Something went wrong",
+          type: 'error',
+        });
+      }
+    }
+
+    fetchMessages();
+  }, [])
+
   // Scroll to bottom on component mount and when chats update
   useEffect(() => {
     scrollToBottom();
-  }, [chats]);
+  }, [messages]);
 
   // Function to send message
-  const sendMessage = () => {
-    if (!message.trim()) return; // Prevent empty messages
+  const sendMessage = async () => {
+    if (!newMessage.trim()) return;
 
-    const newChat = {
-      _id: Date.now().toString(),
-      text: message,
-      sender_id: mockUser._id,
-      receiver_id: "4",
-      created_at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
+    try {
+      const response = await axios.post(`http://localhost:5000/api/message/add-message`, { receiver_id: id, text: newMessage }, { withCredentials: true });
 
-    setChats([...chats, newChat]);
-    setMessage(""); // Clear input field
+      if (response.data.success) {
+        setMessages([...messages, response.data.chatMessage]);
+      }
+
+    } catch (error) {
+
+    }
+    setNewMessage('');
   };
+
+  if (loading || !chatPartner)
+    return <Loading text='Loading Messages...' />
 
   return (
     <main className="flex-1 flex flex-col bg-white shadow-md rounded-lg">
       <div className="p-4 border-b flex items-center gap-3">
-        <img src={mockUser.profile_pic} className="h-10 w-10 rounded-full" alt="User" />
-        <span className="font-semibold text-lg">{mockUser.name}</span>
+        <img src={chatPartner.profile_pic || 'avatars/user.png'} className="h-10 w-10 rounded-full" alt="User" />
+        <span className="font-semibold text-lg">{chatPartner.username}</span>
       </div>
 
       <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto space-y-4">
-        {chats.map((chat) => (
-          <div key={chat._id} className={`flex ${chat.sender_id === mockUser._id ? 'justify-end' : 'justify-start'}`}>
-            <div className={`p-3 rounded-lg text-white ${chat.sender_id === mockUser._id ? 'bg-blue-500' : 'bg-gray-400'}`}>
-              <p className="text-sm">{chat.text}</p>
-              <span className="text-xs text-gray-200">{chat.created_at}</span>
+        {messages.map((message) => (
+          <div key={message._id} className={`flex ${message.sender_id === chatPartner._id ? 'justify-start' : 'justify-end'}`}>
+            <div className={`p-3 rounded-lg text-white ${message.sender_id === chatPartner._id ? 'bg-gray-400' : 'bg-blue-500'}`}>
+              <p className="text-sm">{message.text}</p>
+              <span className="text-xs text-gray-200">{formatCustomTime(message.createdAt)}</span>
             </div>
           </div>
         ))}
@@ -67,8 +106,8 @@ export default function ChatWindow() {
       <div className="p-4 border-t flex items-center gap-2">
         <input
           type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type a message..."
           className="flex-1 p-2 border rounded-md outline-none"
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
