@@ -17,7 +17,7 @@ export default function Chats() {
     const [search, setSearch] = useState('');
     const [searchedUsers, setSearchedUsers] = useState([]);
     const pathname = usePathname();
-    const { chatUsers, onlineUsers, unseenChats } = useAuth();
+    const { chatUsers, onlineUsers, unseenChats, chatGroups } = useAuth();
     const router = useRouter();
 
     const searchUsers = async () => {
@@ -61,7 +61,7 @@ export default function Chats() {
     }, [search])
 
     return (
-        <Tabs.Root defaultValue="all" variant="plain">
+        <Tabs.Root defaultValue="chats" variant="plain">
             <Tabs.List bg="bg.muted" rounded="l3" p="1" width="full" display='flex' justifyContent='space-between'>
                 <Tabs.Trigger value="chats" px='2'>
                     <LuUser />
@@ -103,7 +103,27 @@ export default function Chats() {
                 </aside>
             </Tabs.Content>
             <Tabs.Content value="groups">
-                hi
+            <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
+                    <div className="space-y-2 mt-5">
+                        {chatGroups.length > 0 ? (
+                            chatGroups.map((group) => (
+                                <div
+                                    key={group._id}
+                                    onClick={() => router.push(`/main/group/chat/${group._id}`)}
+                                    className="cursor-pointer"
+                                >
+                                    <UserCard
+                                        name={group.name}
+                                        image={group.profile_pic}
+                                        className={isIdPresent && group._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
+                                    />
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center">No Groups Available</p>
+                        )}
+                    </div>
+                </aside>
             </Tabs.Content>
             <Tabs.Content value="explore">
                 <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">

@@ -11,12 +11,14 @@ const BASE_URL = 'http://localhost:5000';
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [currentChats, setCurrentChats] = useState([]);
-  const [chatUsers, setChatUsers] = useState([]);
   const [unseenChats, setUnseenChats] = useState([]);
-  const [isReady, setIsReady] = useState(false);
+  const [chatUsers, setChatUsers] = useState([]);
+  const [chatGroups, setChatGroups] = useState([]);
+  
 
   const connectSocket = () => {
     if (!user || socket?.connected) return;
@@ -64,6 +66,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const fetchGroups  = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/group/get-groups`, { withCredentials: true });
+
+      if (response.data.success) {
+        setChatGroups(response.data.groups);
+      } else {
+        setChatGroups([]);
+      }
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+      setChatGroups([]);
+    }
+  };
+
   useEffect(() => {
     const fetchAuth = async () => {
       try {
@@ -88,12 +105,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchChats();
+      fetchGroups();
       connectSocket();
       setIsReady(true);
     } else {
       disconnectSocket();
       setOnlineUsers([]);
       setChatUsers([]);
+      setChatGroups([]);
       setCurrentChats([]);
       setUnseenChats([]);
     }
@@ -103,7 +122,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ 
       user, setUser, setIsAuthenticated,
       socket, onlineUsers, 
-      chatUsers, currentChats, unseenChats, setUnseenChats, isReady 
+      chatUsers, currentChats, unseenChats, setUnseenChats, isReady, chatGroups 
     }}>
       {children}
     </AuthContext.Provider>

@@ -123,9 +123,31 @@ export default function Layout({ children }) {
       <GroupCreationModal
         isOpen={isGroupModalOpen}
         onClose={() => setGroupModalOpen(false)}
-        onCreateGroup={(groupData) => {
-          console.log('Group Created:', groupData);
-          // You can send groupData to your backend here
+        onCreateGroup={async ({
+          groupName,
+          groupImage,
+          groupMembers
+        }) => {
+          try {
+            const response = await axios.post('http://localhost:5000/api/group/create', { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, {withCredentials: true});
+            if(response.data.success){
+              toaster.create({
+                title: "Group Created",
+                type: 'success',
+              });
+            } else {
+              toaster.create({
+                title: response.data.message,
+                type: 'error',
+              });
+            }
+          } catch (error) {
+            toaster.create({
+        title: error.response?.data?.message || "Something went wrong",
+        type: 'error',
+      });
+          }
+          
         }}
         search={search}
         handleSearchChange={(value) => setSearch(value)}
