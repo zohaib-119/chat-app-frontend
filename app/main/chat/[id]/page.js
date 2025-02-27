@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toaster } from '@/components/ui/toaster';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
+import { useAuth } from '@/context/authContext';
 
 export default function ChatWindow() {
   const [chatPartner, setChatPartner] = useState(null);
@@ -11,6 +12,7 @@ export default function ChatWindow() {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const chatContainerRef = useRef(null);
+  const { unseenChats, setUnseenChats, socket, currentChats } = useAuth();
 
   const { id } = useParams();
 
@@ -43,6 +45,16 @@ export default function ChatWindow() {
           setChatPartner(response.data.chatUser);
           setMessages(response.data.chatMessages);
           setLoading(false);
+          try {
+            const response2 = await axios.put(`http://localhost:5000/api/message/seen/${id}`, {}, { withCredentials: true });
+            if (response2.data.success) {
+              setUnseenChats(unseenChats.filter(chat => chat !== id));
+            } else {
+              console.error(response.data.message)
+            }
+          } catch (error) {
+            console.error(error)
+          }
         } else {
           toaster.create({
             title: response.data.message,
@@ -58,7 +70,33 @@ export default function ChatWindow() {
     }
 
     fetchMessages();
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    const handleNewMessage = (newMessage) => {
+      if (newMessage.sender_id === id) {
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+      } else {
+        if (currentChats.includes(newMessage.sender_id) && !unseenChats.includes(newMessage.sender_id)) {
+          setUnseenChats(prev => [...prev, newMessage.sender_id]);
+        } else {
+          toaster.create({
+            title: "A message from unknown user",
+            type: 'error',
+          });
+        }
+      }
+    };
+  
+    // Attach listener
+    socket.on('newMessage', handleNewMessage);
+  
+    // Cleanup to remove duplicate listeners
+    return () => {
+      socket.off('newMessage', handleNewMessage);
+    };
+  }, [id, currentChats, unseenChats]);  // Include dependencies if needed
+  
 
   // Scroll to bottom on component mount and when chats update
   useEffect(() => {
@@ -82,6 +120,7 @@ export default function ChatWindow() {
     setNewMessage('');
   };
 
+
   if (loading || !chatPartner)
     return <Loading text='Loading Messages...' />
 
@@ -97,7 +136,7 @@ export default function ChatWindow() {
           <div key={message._id} className={`flex ${message.sender_id === chatPartner._id ? 'justify-start' : 'justify-end'}`}>
             <div className={`p-3 rounded-lg text-white ${message.sender_id === chatPartner._id ? 'bg-gray-400' : 'bg-blue-500'}`}>
               <p className="text-sm">{message.text}</p>
-              <span className="text-xs text-gray-200">{formatCustomTime(message.createdAt)}</span>
+              <span className="text-xs text-gray-200 flex justify-end">{formatCustomTime(message.createdAt)}</span>
             </div>
           </div>
         ))}

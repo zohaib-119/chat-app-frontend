@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [currentChats, setCurrentChats] = useState([]);
   const [chatUsers, setChatUsers] = useState([]);
   const [unseenChats, setUnseenChats] = useState([]);
+  const [isReady, setIsReady] = useState(false);
 
   const connectSocket = () => {
     if (!user || socket?.connected) return;
@@ -88,6 +89,7 @@ export const AuthProvider = ({ children }) => {
     if (isAuthenticated) {
       fetchChats();
       connectSocket();
+      setIsReady(true);
     } else {
       disconnectSocket();
       setOnlineUsers([]);
@@ -101,7 +103,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ 
       user, setUser, setIsAuthenticated,
       socket, onlineUsers, 
-      chatUsers, currentChats, unseenChats 
+      chatUsers, currentChats, unseenChats, setUnseenChats, isReady 
     }}>
       {children}
     </AuthContext.Provider>

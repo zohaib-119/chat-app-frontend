@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth();
+  const { isReady, user } = useAuth();
   const sidebarRef = useRef(null);
   const router = useRouter();
 
@@ -33,7 +33,7 @@ export default function Layout({ children }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (!user)
+  if (!isReady)
     return <Loading text='Loading, Please wait...' />
 
   return (
