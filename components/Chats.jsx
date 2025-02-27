@@ -11,12 +11,14 @@ import { Tabs } from "@chakra-ui/react"
 import { LuFolder, LuSquareCheck, LuUser } from "react-icons/lu"
 import axios from "axios";
 import debounce from "lodash.debounce";
+import { useRouter } from "next/navigation";
 
 export default function Chats() {
     const [search, setSearch] = useState('');
     const [searchedUsers, setSearchedUsers] = useState([]);
     const pathname = usePathname();
     const { chatUsers, onlineUsers, unseenChats } = useAuth();
+    const router = useRouter();
 
     const searchUsers = async () => {
         try {
@@ -61,13 +63,13 @@ export default function Chats() {
     return (
         <Tabs.Root defaultValue="all" variant="plain">
             <Tabs.List bg="bg.muted" rounded="l3" p="1" width="full" display='flex' justifyContent='space-between'>
-                <Tabs.Trigger value="all" px='2'>
+                <Tabs.Trigger value="chats" px='2'>
                     <LuUser />
-                    All
+                    Chats
                 </Tabs.Trigger>
-                <Tabs.Trigger value="unread" px='2'>
+                <Tabs.Trigger value="groups" px='2'>
                     <LuFolder />
-                    Unread
+                    Groups
                 </Tabs.Trigger>
                 <Tabs.Trigger value="explore" px='2'>
                     <LuSquareCheck />
@@ -75,20 +77,24 @@ export default function Chats() {
                 </Tabs.Trigger>
                 <Tabs.Indicator rounded="l2" />
             </Tabs.List>
-            <Tabs.Content value="all">
+            <Tabs.Content value="chats">
                 <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
                     <div className="space-y-2 mt-5">
                         {chatUsers.length > 0 ? (
                             chatUsers.map((user) => (
-                                <UserCard
+                                <div
                                     key={user._id}
-                                    id={user._id}
-                                    name={user.username}
-                                    image={user.profile_pic}
-                                    online={onlineUsers.includes(user._id)}
-                                    unread={unseenChats.includes(user._id)}
-                                    className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
-                                />
+                                    onClick={() => router.push(`/main/chat/${user._id}`)}
+                                    className="cursor-pointer"
+                                >
+                                    <UserCard
+                                        name={user.username}
+                                        image={user.profile_pic}
+                                        online={onlineUsers.includes(user._id)}
+                                        unread={unseenChats.includes(user._id)}
+                                        className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
+                                    />
+                                </div>
                             ))
                         ) : (
                             <p className="text-gray-500 text-center">No Chats Available</p>
@@ -96,25 +102,8 @@ export default function Chats() {
                     </div>
                 </aside>
             </Tabs.Content>
-            <Tabs.Content value="unread">
-                <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
-                    <div className="space-y-2 mt-5">
-                        {chatUsers.length > 0 ? (
-                            chatUsers.filter(user => unseenChats.includes(user._id)).map((user) => (
-                                <UserCard
-                                    key={user._id}
-                                    id={user._id}
-                                    name={user.username}
-                                    image={user.profile_pic}
-                                    unread={unseenChats.includes(user._id)}
-                                    online={onlineUsers.includes(user._id)}
-                                />
-                            ))
-                        ) : (
-                            <p className="text-gray-500 text-center">No Unread Messages</p>
-                        )}
-                    </div>
-                </aside>
+            <Tabs.Content value="groups">
+                hi
             </Tabs.Content>
             <Tabs.Content value="explore">
                 <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
@@ -125,14 +114,18 @@ export default function Chats() {
                     <div className="space-y-2 mt-5">
                         {searchedUsers.length > 0 ? (
                             searchedUsers.map((user) => (
-                                <UserCard
+                                <div
                                     key={user._id}
-                                    id={user._id}
+                                    onClick={() => router.push(`/main/chat/${user._id}`)}
+                                    className="cursor-pointer"
+                                >
+                                <UserCard
                                     name={user.username}
                                     image={user.profile_pic}
                                     online={onlineUsers.includes(user._id)}
                                     className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
                                 />
+                                </div>
                             ))
                         ) : (
                             <p className="text-gray-500 text-center">No Chats Available</p>

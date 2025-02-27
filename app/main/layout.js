@@ -6,12 +6,55 @@ import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { useAuth } from '@/context/authContext';
 import Loading from '@/components/Loading';
 import { useRouter } from 'next/navigation';
+import GroupCreationModal from '@/components/GroupCreationModal';
+import { toaster } from '@/components/ui/toaster';
+import debounce from "lodash.debounce";
+import axios from 'axios';
 
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchedUsers, setSearchedUsers] = useState([]);
+  const [search, setSearch] = useState('');
+  const [isGroupModalOpen, setGroupModalOpen] = useState(false);
   const { isReady, user } = useAuth();
   const sidebarRef = useRef(null);
   const router = useRouter();
+
+  const searchUsers = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/user/search?username=${search}`, { withCredentials: true });
+      if (response.data.success) {
+        setSearchedUsers(response.data.users);
+      } else {
+        toaster.create({
+          title: response.data.message,
+          type: 'error',
+        });
+        setSearchedUsers([]);
+      }
+    } catch (error) {
+      toaster.create({
+        title: error.response?.data?.message || "Something went wrong",
+        type: 'error',
+      });
+      setSearchedUsers([]);
+    }
+  }
+
+  const debouncedSearch = debounce(() => {
+    if (search) {
+      searchUsers();
+    } else {
+      setSearchedUsers([]);
+    }
+  }, 1000);
+
+  useEffect(() => {
+    debouncedSearch();
+
+    return () => debouncedSearch.cancel();
+  }, [search])
+
 
   const closeSidebar = () => {
     setIsOpen(false);
@@ -27,7 +70,6 @@ export default function Layout({ children }) {
         closeSidebar();
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -42,6 +84,8 @@ export default function Layout({ children }) {
       <nav className="bg-blue-500 text-white p-4 shadow-md flex justify-between items-center">
         <div className="font-semibold text-lg">Link Up</div>
         <div className='flex items-center gap-5 justify-center'>
+          <button onClick={() => setGroupModalOpen(true)}>Create Group</button>
+
           <div>
             <img
               src={user.profile_pic || '/avatars/user.png'}
@@ -75,6 +119,18 @@ export default function Layout({ children }) {
 
         {children}
       </div>
+
+      <GroupCreationModal
+        isOpen={isGroupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        onCreateGroup={(groupData) => {
+          console.log('Group Created:', groupData);
+          // You can send groupData to your backend here
+        }}
+        search={search}
+        handleSearchChange={(value) => setSearch(value)}
+        searchedUsers={searchedUsers}
+      />
     </div>
   );
 }

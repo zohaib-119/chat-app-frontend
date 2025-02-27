@@ -1,20 +1,17 @@
 "use client";
 
 import { Badge } from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
 
 const UserCard = ({
-  id,
   name, 
   image, 
   className = "", 
   unread = false, 
   online = false
 }) => {
-  const router = useRouter();
 
   return (
-    <div className={`flex w-full items-center p-2 ${className} rounded-2xl hover:bg-gray-100 relative cursor-pointer`} onClick={() => router.push(`/main/chat/${id}`)}>
+    <div className={`flex w-full items-center p-2 ${className} rounded-2xl hover:bg-gray-100 relative cursor-pointer`}>
       <div className="flex items-center gap-4 cursor-pointer relative">
         <div className="relative">
           {/* Profile Image */}
