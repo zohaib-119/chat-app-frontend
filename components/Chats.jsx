@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
-import SearchBar from "@/components/Searchbar";
-import { toaster } from "@/components/ui/toaster";
-import UserCard from "@/components/UserCard";
 import { useState } from "react";
-import { useAuth } from "@/context/authContext";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { toaster } from "@/components/ui/toaster";
 import { Tabs } from "@chakra-ui/react"
 import { LuFolder, LuSquareCheck, LuUser } from "react-icons/lu"
-import axios from "axios";
+import { useAuth } from "@/context/authContext";
+import SearchBar from "@/components/Searchbar";
+import UserCard from "@/components/UserCard";
 import debounce from "lodash.debounce";
-import { useRouter } from "next/navigation";
 
 export default function Chats() {
     const [search, setSearch] = useState('');
@@ -52,7 +52,7 @@ export default function Chats() {
         } else {
             setSearchedUsers([]);
         }
-    }, 1000);
+    }, 500);
 
     useEffect(() => {
         debouncedSearch();
@@ -78,8 +78,9 @@ export default function Chats() {
                 <Tabs.Indicator rounded="l2" />
             </Tabs.List>
             <Tabs.Content value="chats">
-                <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
-                    <div className="space-y-2 mt-5">
+                <aside className="w-full bg-white border-r p-2 overflow-y-auto h-screen sm:w-80">
+                    <div className="space-y-2">
+                    <h3 className="ml-2 text-xl font-bold text-blue-600">Chats</h3>
                         {chatUsers.length > 0 ? (
                             chatUsers.map((user) => (
                                 <div
@@ -103,8 +104,9 @@ export default function Chats() {
                 </aside>
             </Tabs.Content>
             <Tabs.Content value="groups">
-            <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
-                    <div className="space-y-2 mt-5">
+            <aside className="w-full bg-white border-r  p-2 overflow-y-auto h-screen sm:w-80">
+                    <div className="space-y-2">
+                    <h3 className="ml-2 text-xl font-bold text-blue-600">Groups</h3>
                         {chatGroups.length > 0 ? (
                             chatGroups.map((group) => (
                                 <div
@@ -126,13 +128,14 @@ export default function Chats() {
                 </aside>
             </Tabs.Content>
             <Tabs.Content value="explore">
-                <aside className="w-full bg-white border-r  p-4 overflow-y-auto h-screen sm:w-80">
+                <aside className="w-full bg-white border-r  p-2 overflow-y-auto h-screen sm:w-80">
+                <h3 className="ml-2 text-xl font-bold text-blue-600 mb-2">Explore</h3>
                     <SearchBar
                         value={search}
                         onChange={(value) => setSearch(value)}
                     />
                     <div className="space-y-2 mt-5">
-                        {searchedUsers.length > 0 ? (
+                        {searchedUsers.length > 0 && (
                             searchedUsers.map((user) => (
                                 <div
                                     key={user._id}
@@ -147,8 +150,6 @@ export default function Chats() {
                                 />
                                 </div>
                             ))
-                        ) : (
-                            <p className="text-gray-500 text-center">No Chats Available</p>
                         )}
                     </div>
                 </aside>

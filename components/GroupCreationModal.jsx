@@ -66,7 +66,7 @@ const GroupCreationModal = ({ isOpen, onClose, onCreateGroup,search, handleSearc
 
         {/* Profile Picture Selection */}
         <h3 className="text-lg font-medium mb-2">Select Group Picture</h3>
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="flex flex-wrap gap-3 mb-4">
           {groupImages.map((avatar) => (
             <img
               key={avatar.name}
@@ -90,14 +90,14 @@ const GroupCreationModal = ({ isOpen, onClose, onCreateGroup,search, handleSearc
         />
 
         {/* Search Results */}
-        <div className="max-h-40 overflow-y-auto mt-2 space-y-2">
+        <div className="max-h-32 min-h-32 overflow-y-auto mt-2 space-y-2">
           {searchedUsers.map((user) => (
             <div
               key={user._id}
               onClick={() => handleAddMember(user)}
               className="cursor-pointer"
             >
-              <UserCard id={user._id} name={user.username} image={user.profile_pic} />
+              <UserCard id={user._id} name={user.username} image={user.profile_pic} className={groupMembers.some(member => member._id === user._id) ? "bg-gray-200" : "bg-gray-50"} />
             </div>
           ))}
         </div>

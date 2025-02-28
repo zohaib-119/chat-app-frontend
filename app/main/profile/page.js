@@ -10,7 +10,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
-  const { user, setUser, setIsAuthenticated } = useAuth();
+  const { user, setUser, setIsAuthenticated, setIsReady } = useAuth();
   const [newAvatar, setNewAvatar] = useState(user.profile_pic);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const router = useRouter();
@@ -46,8 +46,9 @@ export default function ProfilePage() {
       const response = await axios.post('http://localhost:5000/api/auth/logout', {}, { withCredentials: true });
 
       if (response.data.success) {
-        setUser(null);
+        setIsReady(false);
         setIsAuthenticated(false);
+        setUser(null);
         router.replace('/');
       } else {
         toaster.create({
@@ -62,9 +63,6 @@ export default function ProfilePage() {
       });
     }
   }
-
-  if (!user)
-    return <Loading />
 
   return (
     <main className="flex flex-col items-center bg-gray-100 shadow-md rounded-lg p-6 w-full mx-auto">

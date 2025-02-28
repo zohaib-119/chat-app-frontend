@@ -9,9 +9,9 @@ const AuthContext = createContext();
 const BASE_URL = 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [user, setUser] = useState(null);
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [currentChats, setCurrentChats] = useState([]);
@@ -32,8 +32,6 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for online users
     _socket.on("getOnlineUsers", (users) => {
-      console.log('update');
-      console.log(users);
       setOnlineUsers(users);
     });
   };
@@ -59,7 +57,7 @@ export const AuthProvider = ({ children }) => {
         setUnseenChats([]);
       }
     } catch (error) {
-      console.error("Error fetching chats:", error);
+      // console.error("Error fetching chats:", error);
       setChatUsers([]);
       setCurrentChats([]);
       setUnseenChats([]);
@@ -76,7 +74,7 @@ export const AuthProvider = ({ children }) => {
         setChatGroups([]);
       }
     } catch (error) {
-      console.error("Error fetching chats:", error);
+      // console.error("Error fetching chats:", error);
       setChatGroups([]);
     }
   };
@@ -122,7 +120,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ 
       user, setUser, setIsAuthenticated,
       socket, onlineUsers, 
-      chatUsers, currentChats, unseenChats, setUnseenChats, isReady, chatGroups 
+      chatUsers, currentChats, unseenChats, setUnseenChats, isReady, chatGroups, setIsReady
     }}>
       {children}
     </AuthContext.Provider>

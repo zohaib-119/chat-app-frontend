@@ -5,14 +5,15 @@ import { toaster } from '@/components/ui/toaster';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/authContext';
+import { useMessage } from '@/context/messageContext';
 
 export default function ChatWindow() {
   const [chatPartner, setChatPartner] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const chatContainerRef = useRef(null);
   const { unseenChats, setUnseenChats, socket, currentChats } = useAuth();
+  const {messages, setMessages, setCommunicationId} = useMessage();
 
   const { id } = useParams();
 
@@ -38,6 +39,7 @@ export default function ChatWindow() {
 
   useEffect(() => {
     const fetchMessages = async () => {
+      setCommunicationId(id)
       try {
         const response = await axios.get(`http://localhost:5000/api/message/messages/${id}`, { withCredentials: true });
 
@@ -70,33 +72,11 @@ export default function ChatWindow() {
     }
 
     fetchMessages();
-  }, []);
 
-  useEffect(() => {
-    const handleNewMessage = (newMessage) => {
-      if (newMessage.sender_id === id) {
-        setMessages(prevMessages => [...prevMessages, newMessage]);
-      } else {
-        if (currentChats.includes(newMessage.sender_id) && !unseenChats.includes(newMessage.sender_id)) {
-          setUnseenChats(prev => [...prev, newMessage.sender_id]);
-        } else {
-          toaster.create({
-            title: "A message from unknown user",
-            type: 'error',
-          });
-        }
-      }
-    };
-  
-    // Attach listener
-    socket.on('newMessage', handleNewMessage);
-  
-    // Cleanup to remove duplicate listeners
     return () => {
-      socket.off('newMessage', handleNewMessage);
-    };
-  }, [id, currentChats, unseenChats]);  // Include dependencies if needed
-  
+      setCommunicationId(null);
+    }
+  }, [id]);
 
   // Scroll to bottom on component mount and when chats update
   useEffect(() => {

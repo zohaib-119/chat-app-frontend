@@ -12,7 +12,7 @@ import debounce from "lodash.debounce";
 import axios from 'axios';
 
 export default function Layout({ children }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // for the sidebar
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [isGroupModalOpen, setGroupModalOpen] = useState(false);
@@ -47,7 +47,7 @@ export default function Layout({ children }) {
     } else {
       setSearchedUsers([]);
     }
-  }, 1000);
+  }, 500);
 
   useEffect(() => {
     debouncedSearch();
@@ -84,7 +84,7 @@ export default function Layout({ children }) {
       <nav className="bg-blue-500 text-white p-4 shadow-md flex justify-between items-center">
         <div className="font-semibold text-lg">Link Up</div>
         <div className='flex items-center gap-5 justify-center'>
-          <button onClick={() => setGroupModalOpen(true)}>Create Group</button>
+          <button className="border-2 border-white rounded-full p-2 font-semibold" onClick={() => setGroupModalOpen(true)}>Create Group</button>
 
           <div>
             <img

@@ -5,14 +5,15 @@ import { toaster } from '@/components/ui/toaster';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/authContext';
+import { useMessage } from '@/context/messageContext';
 
 export default function GroupChatWindow() {
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const chatContainerRef = useRef(null);
-    const { user, socket } = useAuth();
+    const { user } = useAuth();
+    const {messages, setMessages, setCommunicationId} = useMessage();
     const { id } = useParams();
 
     function formatCustomTime(isoString) {
@@ -28,6 +29,7 @@ export default function GroupChatWindow() {
     }
 
     useEffect(() => {
+        setCommunicationId(id)
         const fetchMessages = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/api/group-message/get-messages/${id}`, { withCredentials: true });
@@ -50,26 +52,11 @@ export default function GroupChatWindow() {
             }
         }
         fetchMessages();
-    }, []);
 
-    useEffect(() => {
-        const handleNewMessage = ({newMessage, groupId}) => {
-          if (groupId === id) {
-            setMessages(prevMessages => [...prevMessages, newMessage]);
-          } else {
-            
-          }
-        };
-      
-        // Attach listener
-        socket.on('newGroupMessage', handleNewMessage);
-      
-        // Cleanup to remove duplicate listeners
         return () => {
-          socket.off('newGroupMessage', handleNewMessage);
-        };
-      }, [id]);  // Include dependencies if needed
-      
+            setCommunicationId(null);
+          }
+    }, [id]);
 
     const scrollToBottom = () => {
         if (chatContainerRef.current) {
