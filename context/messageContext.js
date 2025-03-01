@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './authContext';
 import { toaster } from '@/components/ui/toaster';
 import axios from 'axios';
+
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 const MessageContext = createContext();
 
 export function MessageProvider({ children }) {
@@ -19,7 +22,7 @@ export function MessageProvider({ children }) {
             if (communicationId && newMessage.sender_id === communicationId) {
                 setMessages(prevMessages => [...prevMessages, newMessage]);
                 try {
-                    axios.put(`http://localhost:5000/api/message/seen/${newMessage.sender_id}`, {}, { withCredentials: true });
+                    axios.put(`${baseURL}/api/message/seen/${newMessage.sender_id}`, {}, { withCredentials: true });
                 } catch (error) {
                     console.error(error)
                 }
@@ -43,7 +46,7 @@ export function MessageProvider({ children }) {
             if (communicationId && groupId === communicationId) {
                 setMessages(prevMessages => [...prevMessages, newMessage]);
                 try {
-                    await axios.put(`http://localhost:5000/api/group-message/seen/${groupId}`, {}, { withCredentials: true });
+                    await axios.put(`${baseURL}/api/group-message/seen/${groupId}`, {}, { withCredentials: true });
                 } catch (error) {
                     console.error(error)
                 }

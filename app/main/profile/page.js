@@ -9,6 +9,8 @@ import { useAuth } from "@/context/authContext";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function ProfilePage() {
   const { user, setUser, setIsAuthenticated, setIsReady } = useAuth();
   const [newAvatar, setNewAvatar] = useState(user.profile_pic);
@@ -17,7 +19,7 @@ export default function ProfilePage() {
 
   const saveChanges = async () => {
     try {
-      const response = await axios.put('http://localhost:5000/api/auth/update-profile', { profile_pic: newAvatar }, { withCredentials: true });
+      const response = await axios.put(`${baseURL}/api/auth/update-profile`, { profile_pic: newAvatar }, { withCredentials: true });
 
       if (response.data.success) {
         setUser({ ...user, profile_pic: newAvatar });
@@ -43,7 +45,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/logout', {}, { withCredentials: true });
+      const response = await axios.post(`${baseURL}/api/auth/logout`, {}, { withCredentials: true });
 
       if (response.data.success) {
         setIsReady(false);

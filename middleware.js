@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 export async function middleware(request) {
     const { pathname } = request.nextUrl;
 
     console.log("Middleware running on:", pathname);
 
     try {
-        const response = await fetch("http://localhost:5000/api/auth/check-auth", {
+        const response = await fetch(`${baseURL}/api/auth/check-auth`, {
             method: "GET",
             headers: {
                 Cookie: request.headers.get("cookie") || "",

@@ -6,6 +6,8 @@ import axios from 'axios'
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function AuthPage() {
 
   const router = useRouter();
@@ -53,7 +55,7 @@ export default function AuthPage() {
       console.log("Logging in with", { email, password });
 
       try {
-        const response = await axios.post('http://localhost:5000/api/auth/login', {
+        const response = await axios.post(`${baseURL}/api/auth/login`, {
           email, password
         }, { withCredentials: true });
 
@@ -78,7 +80,7 @@ export default function AuthPage() {
       console.log("Signing up with", { username, email, password });
 
       try {
-        const response = await axios.post('http://localhost:5000/api/auth/signup', {
+        const response = await axios.post(`${baseURL}/api/auth/signup`, {
           email, password, username
         }, { withCredentials: true });
 

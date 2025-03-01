@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 
 const AuthContext = createContext();
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

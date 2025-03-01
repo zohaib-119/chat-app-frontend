@@ -11,6 +11,8 @@ import { toaster } from '@/components/ui/toaster';
 import debounce from "lodash.debounce";
 import axios from 'axios';
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Layout({ children }) {
   const [isOpen, setIsOpen] = useState(false); // for the sidebar
   const [searchedUsers, setSearchedUsers] = useState([]);
@@ -22,7 +24,7 @@ export default function Layout({ children }) {
 
   const searchUsers = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/user/search?username=${search}`, { withCredentials: true });
+      const response = await axios.get(`${baseURL}/api/user/search?username=${search}`, { withCredentials: true });
       if (response.data.success) {
         setSearchedUsers(response.data.users);
       } else {
@@ -129,7 +131,7 @@ export default function Layout({ children }) {
           groupMembers
         }) => {
           try {
-            const response = await axios.post('http://localhost:5000/api/group/create', { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, { withCredentials: true });
+            const response = await axios.post(`${baseURL}/api/group/create`, { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, { withCredentials: true });
             if (response.data.success) {
               toaster.create({
                 title: "Group Created",

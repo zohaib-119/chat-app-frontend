@@ -8,6 +8,8 @@ import { useAuth } from '@/context/authContext';
 import { useMessage } from '@/context/messageContext';
 import { useRouter } from 'next/navigation';
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function ChatWindow() {
   const [chatPartner, setChatPartner] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -47,14 +49,14 @@ export default function ChatWindow() {
     const fetchMessages = async () => {
       setCommunicationId(id)
       try {
-        const response = await axios.get(`http://localhost:5000/api/message/messages/${id}`, { withCredentials: true });
+        const response = await axios.get(`${baseURL}/api/message/messages/${id}`, { withCredentials: true });
 
         if (response.data.success) {
           setChatPartner(response.data.chatUser);
           setMessages(response.data.chatMessages);
           setLoading(false);
           try {
-            const response2 = await axios.put(`http://localhost:5000/api/message/seen/${id}`, {}, { withCredentials: true });
+            const response2 = await axios.put(`${baseURL}/api/message/seen/${id}`, {}, { withCredentials: true });
             if (response2.data.success) {
               setUnseenChats(prev => prev.filter(chat => chat !== id));
             } else {
@@ -96,7 +98,7 @@ export default function ChatWindow() {
     if (!newMessage.trim()) return;
 
     try {
-      const response = await axios.post(`http://localhost:5000/api/message/add-message`, { receiver_id: id, text: newMessage }, { withCredentials: true });
+      const response = await axios.post(`${baseURL}/api/message/add-message`, { receiver_id: id, text: newMessage }, { withCredentials: true });
 
       if (response.data.success) {
         setMessages([...messages, response.data.chatMessage]);

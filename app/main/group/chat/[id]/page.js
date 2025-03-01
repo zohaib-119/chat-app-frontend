@@ -8,6 +8,8 @@ import { useAuth } from '@/context/authContext';
 import { useMessage } from '@/context/messageContext';
 import { useRouter } from 'next/navigation';
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function GroupChatWindow() {
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -34,14 +36,14 @@ export default function GroupChatWindow() {
         setCommunicationId(id)
         const fetchMessages = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/group-message/get-messages/${id}`, { withCredentials: true });
+                const response = await axios.get(`${baseURL}/api/group-message/get-messages/${id}`, { withCredentials: true });
 
                 if (response.data.success) {
                     setGroup(response.data.group);
                     setMessages(response.data.chatMessages);
                     setLoading(false);
                     try {
-                        const response2 = await axios.put(`http://localhost:5000/api/group-message/seen/${id}`, {}, { withCredentials: true });
+                        const response2 = await axios.put(`${baseURL}/api/group-message/seen/${id}`, {}, { withCredentials: true });
                         if (response2.data.success) {
                           setUnseenGroupChats(prev => prev.filter(chat => chat !== id));
                         } else {
@@ -85,7 +87,7 @@ export default function GroupChatWindow() {
     if (!newMessage.trim()) return;
 
     try {
-      const response = await axios.post(`http://localhost:5000/api/group-message/add-message`, { groupId: id, text: newMessage }, { withCredentials: true });
+      const response = await axios.post(`${baseURL}/api/group-message/add-message`, { groupId: id, text: newMessage }, { withCredentials: true });
 
       if (!response.data.success) {
         toaster.create({
