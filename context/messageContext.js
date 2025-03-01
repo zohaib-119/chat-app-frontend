@@ -12,17 +12,21 @@ const MessageContext = createContext();
 export function MessageProvider({ children }) {
     const [messages, setMessages] = useState([]);
     const [communicationId, setCommunicationId] = useState(null); // refering to the user_id or group_id in chat
-    const { socket, unseenChats, setUnseenChats, currentChats, fetchChats, setChatGroups, user, unseenGroupChats, setUnseenGroupChats } = useAuth();
+    const { socket, unseenChats, setUnseenChats, currentChats, fetchChats, setChatGroups, user, unseenGroupChats, setUnseenGroupChats, token } = useAuth();
 
     useEffect(() => {
         if (!socket) return;
 
 
-        const handleNewMessage = async ({newMessage, senderName}) => {
+        const handleNewMessage = async ({ newMessage, senderName }) => {
             if (communicationId && newMessage.sender_id === communicationId) {
                 setMessages(prevMessages => [...prevMessages, newMessage]);
                 try {
-                    axios.put(`${baseURL}/api/message/seen/${newMessage.sender_id}`, {}, { withCredentials: true });
+                    axios.put(`${baseURL}/api/message/seen/${newMessage.sender_id}`, {}, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
                 } catch (error) {
                     console.error(error)
                 }
@@ -46,7 +50,11 @@ export function MessageProvider({ children }) {
             if (communicationId && groupId === communicationId) {
                 setMessages(prevMessages => [...prevMessages, newMessage]);
                 try {
-                    await axios.put(`${baseURL}/api/group-message/seen/${groupId}`, {}, { withCredentials: true });
+                    await axios.put(`${baseURL}/api/group-message/seen/${groupId}`, {}, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
                 } catch (error) {
                     console.error(error)
                 }

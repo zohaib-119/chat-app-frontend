@@ -5,6 +5,7 @@ import { toaster } from "@/components/ui/toaster";
 import axios from 'axios'
 import { useAuth } from "@/context/authContext";
 import { useRouter } from "next/navigation";
+import { setCookie } from 'cookies-next';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,7 +13,7 @@ export default function AuthPage() {
 
   const router = useRouter();
 
-  const { setUser, setIsAuthenticated } = useAuth();
+  const { setUser, setIsAuthenticated, setToken } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,10 +58,16 @@ export default function AuthPage() {
       try {
         const response = await axios.post(`${baseURL}/api/auth/login`, {
           email, password
-        }, { withCredentials: true });
+        });
 
         if (response.data.success) {
           setUser(response.data.user);
+          setToken(response.data.token);
+          setCookie('token', response.data.token, {
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7,
+            sameSite: 'Lax'
+          });
           setIsAuthenticated(true);
           router.replace('/main');
         } else {
@@ -82,10 +89,16 @@ export default function AuthPage() {
       try {
         const response = await axios.post(`${baseURL}/api/auth/signup`, {
           email, password, username
-        }, { withCredentials: true });
+        });
 
         if (response.data.success) {
           setUser(response.data.user);
+          setToken(response.data.token);
+          setCookie('token', response.data.token, {
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7,
+            sameSite: 'Lax'
+          });
           setIsAuthenticated(true);
           router.replace('/main');
         } else {

@@ -15,7 +15,7 @@ export default function ChatWindow() {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const chatContainerRef = useRef(null);
-  const { setUnseenChats, user } = useAuth();
+  const { setUnseenChats, user, token } = useAuth();
   const {messages, setMessages, setCommunicationId} = useMessage();
   const router = useRouter();
 
@@ -49,14 +49,22 @@ export default function ChatWindow() {
     const fetchMessages = async () => {
       setCommunicationId(id)
       try {
-        const response = await axios.get(`${baseURL}/api/message/messages/${id}`, { withCredentials: true });
+        const response = await axios.get(`${baseURL}/api/message/messages/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
 
         if (response.data.success) {
           setChatPartner(response.data.chatUser);
           setMessages(response.data.chatMessages);
           setLoading(false);
           try {
-            const response2 = await axios.put(`${baseURL}/api/message/seen/${id}`, {}, { withCredentials: true });
+            const response2 = await axios.put(`${baseURL}/api/message/seen/${id}`, {}, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
             if (response2.data.success) {
               setUnseenChats(prev => prev.filter(chat => chat !== id));
             } else {
@@ -98,7 +106,11 @@ export default function ChatWindow() {
     if (!newMessage.trim()) return;
 
     try {
-      const response = await axios.post(`${baseURL}/api/message/add-message`, { receiver_id: id, text: newMessage }, { withCredentials: true });
+      const response = await axios.post(`${baseURL}/api/message/add-message`, { receiver_id: id, text: newMessage }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (response.data.success) {
         setMessages([...messages, response.data.chatMessage]);

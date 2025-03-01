@@ -18,13 +18,17 @@ export default function Layout({ children }) {
   const [searchedUsers, setSearchedUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [isGroupModalOpen, setGroupModalOpen] = useState(false);
-  const { isReady, user } = useAuth();
+  const { isReady, user, token } = useAuth();
   const sidebarRef = useRef(null);
   const router = useRouter();
 
   const searchUsers = async () => {
     try {
-      const response = await axios.get(`${baseURL}/api/user/search?username=${search}`, { withCredentials: true });
+      const response = await axios.get(`${baseURL}/api/user/search?username=${search}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (response.data.success) {
         setSearchedUsers(response.data.users);
       } else {
@@ -131,7 +135,11 @@ export default function Layout({ children }) {
           groupMembers
         }) => {
           try {
-            const response = await axios.post(`${baseURL}/api/group/create`, { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, { withCredentials: true });
+            const response = await axios.post(`${baseURL}/api/group/create`, { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
             if (response.data.success) {
               toaster.create({
                 title: "Group Created",

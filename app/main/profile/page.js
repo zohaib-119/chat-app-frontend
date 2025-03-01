@@ -8,18 +8,23 @@ import { FaEdit } from "react-icons/fa";
 import { useAuth } from "@/context/authContext";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { deleteCookie } from "cookies-next";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProfilePage() {
-  const { user, setUser, setIsAuthenticated, setIsReady } = useAuth();
+  const { user, setUser, setIsAuthenticated, setIsReady, token } = useAuth();
   const [newAvatar, setNewAvatar] = useState(user.profile_pic);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const router = useRouter();
 
   const saveChanges = async () => {
     try {
-      const response = await axios.put(`${baseURL}/api/auth/update-profile`, { profile_pic: newAvatar }, { withCredentials: true });
+      const response = await axios.put(`${baseURL}/api/auth/update-profile`, { profile_pic: newAvatar }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (response.data.success) {
         setUser({ ...user, profile_pic: newAvatar });
@@ -44,26 +49,32 @@ export default function ProfilePage() {
   }
 
   const handleLogout = async () => {
-    try {
-      const response = await axios.post(`${baseURL}/api/auth/logout`, {}, { withCredentials: true });
 
-      if (response.data.success) {
-        setIsReady(false);
-        setIsAuthenticated(false);
-        setUser(null);
-        router.replace('/');
-      } else {
-        toaster.create({
-          title: response.data.message,
-          type: 'error',
-        });
-      }
-    } catch (error) {
-      toaster.create({
-        title: error.response?.data?.message || "Something went wrong",
-        type: 'error',
-      });
-    }
+    // try {
+    //   const response = await axios.post(`${baseURL}/api/auth/logout`, {}, { withCredentials: true });
+
+    //   if (response.data.success) {
+    //     setIsReady(false);
+    //     setIsAuthenticated(false);
+    //     setUser(null);
+    //     router.replace('/');
+    //   } else {
+    //     toaster.create({
+    //       title: response.data.message,
+    //       type: 'error',
+    //     });
+    //   }
+    // } catch (error) {
+    //   toaster.create({
+    //     title: error.response?.data?.message || "Something went wrong",
+    //     type: 'error',
+    //   });
+    // }
+    deleteCookie('token');
+    setIsReady(false);
+    setIsAuthenticated(false);
+    setUser(null);
+    router.replace('/');
   }
 
   return (
@@ -96,7 +107,7 @@ export default function ProfilePage() {
 
       {/* Avatar Selection Modal */}
       {showAvatarModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Select an Avatar</h3>

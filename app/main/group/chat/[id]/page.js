@@ -15,8 +15,8 @@ export default function GroupChatWindow() {
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const chatContainerRef = useRef(null);
-    const { user, setUnseenGroupChats } = useAuth();
-    const {messages, setMessages, setCommunicationId} = useMessage();
+    const { user, setUnseenGroupChats, token } = useAuth();
+    const { messages, setMessages, setCommunicationId } = useMessage();
     const { id } = useParams();
     const router = useRouter();
 
@@ -36,22 +36,30 @@ export default function GroupChatWindow() {
         setCommunicationId(id)
         const fetchMessages = async () => {
             try {
-                const response = await axios.get(`${baseURL}/api/group-message/get-messages/${id}`, { withCredentials: true });
+                const response = await axios.get(`${baseURL}/api/group-message/get-messages/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
 
                 if (response.data.success) {
                     setGroup(response.data.group);
                     setMessages(response.data.chatMessages);
                     setLoading(false);
                     try {
-                        const response2 = await axios.put(`${baseURL}/api/group-message/seen/${id}`, {}, { withCredentials: true });
+                        const response2 = await axios.put(`${baseURL}/api/group-message/seen/${id}`, {}, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                            },
+                        });
                         if (response2.data.success) {
-                          setUnseenGroupChats(prev => prev.filter(chat => chat !== id));
+                            setUnseenGroupChats(prev => prev.filter(chat => chat !== id));
                         } else {
-                          console.error(response.data.message)
+                            console.error(response.data.message)
                         }
-                      } catch (error) {
+                    } catch (error) {
                         console.error(error)
-                      }
+                    }
                 } else {
                     toaster.create({
                         title: response.data.message,
@@ -83,30 +91,34 @@ export default function GroupChatWindow() {
     }, [messages]);
 
     // Function to send message
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return;
+    const sendMessage = async () => {
+        if (!newMessage.trim()) return;
 
-    try {
-      const response = await axios.post(`${baseURL}/api/group-message/add-message`, { groupId: id, text: newMessage }, { withCredentials: true });
+        try {
+            const response = await axios.post(`${baseURL}/api/group-message/add-message`, { groupId: id, text: newMessage }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
 
-      if (!response.data.success) {
-        toaster.create({
-            title: response.data.message,
-            type: 'error',
-          });
-      }
-    } catch (error) {
-        toaster.create({
-            title: error.response?.data?.message || "Something went wrong",
-            type: 'error',
-          });
-    }
-    setNewMessage('');
-  };
+            if (!response.data.success) {
+                toaster.create({
+                    title: response.data.message,
+                    type: 'error',
+                });
+            }
+        } catch (error) {
+            toaster.create({
+                title: error.response?.data?.message || "Something went wrong",
+                type: 'error',
+            });
+        }
+        setNewMessage('');
+    };
 
 
-  if (loading || !group)
-    return <Loading text='Loading Messages...' />
+    if (loading || !group)
+        return <Loading text='Loading Messages...' />
 
     return (
         <main className="flex-1 flex flex-col bg-white shadow-md rounded-lg">

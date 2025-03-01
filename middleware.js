@@ -7,13 +7,16 @@ export async function middleware(request) {
 
     console.log("Middleware running on:", pathname);
 
+    const token = request.cookies.get('token')?.value || '';
+
+    console.log('token', token)
+
     try {
         const response = await fetch(`${baseURL}/api/auth/check-auth`, {
             method: "GET",
             headers: {
-                Cookie: request.headers.get("cookie") || "",
+                'Authorization': `Bearer ${token}`,
             },
-            credentials: "include",
         });
 
         const data = await response.json();

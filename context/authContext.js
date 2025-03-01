@@ -3,12 +3,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from 'axios';
 import { io } from "socket.io-client";
+import { getCookie } from "cookies-next";
 
 const AuthContext = createContext();
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [user, setUser] = useState(null);
@@ -19,7 +21,6 @@ export const AuthProvider = ({ children }) => {
   const [chatUsers, setChatUsers] = useState([]);
   const [chatGroups, setChatGroups] = useState([]);
   const [unseenGroupChats, setUnseenGroupChats] = useState([]);
-  
 
   const connectSocket = () => {
     if (!user || socket?.connected) return;
@@ -46,7 +47,11 @@ export const AuthProvider = ({ children }) => {
 
   const fetchChats = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/user/get-chats`, { withCredentials: true });
+      const response = await axios.get(`${BASE_URL}/api/user/get-chats`,{
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (response.data.success) {
         setChatUsers(response.data.chatUsers);
@@ -65,13 +70,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchGroups  = async () => {
+  const fetchGroups = async () => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/group/get-groups`, { withCredentials: true });
+      const response = await axios.get(`${BASE_URL}/api/group/get-groups`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (response.data.success) {
         setChatGroups(response.data.groups);
-        setUnseenGroupChats(response.data.unseenGroupChats)
+        setUnseenGroupChats(response.data.unseenGroupChats);
       } else {
         setChatGroups([]);
         setUnseenGroupChats([]);
@@ -86,11 +95,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchAuth = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/api/auth/check-auth`, { withCredentials: true });
+        const _token = getCookie('token') || '';
+        const response = await axios.get(`${BASE_URL}/api/auth/check-auth`, {
+          headers: {
+            'Authorization': `Bearer ${_token}`,
+          },
+        });
 
         if (response.data.success) {
           setUser(response.data.user);
           setIsAuthenticated(true);
+          setToken(_token)
         } else {
           setUser(null);
           setIsAuthenticated(false);
@@ -105,7 +120,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && token) {
       fetchChats();
       fetchGroups();
       connectSocket();
@@ -118,15 +133,15 @@ export const AuthProvider = ({ children }) => {
       setCurrentChats([]);
       setUnseenChats([]);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   return (
-    <AuthContext.Provider value={{ 
+    <AuthContext.Provider value={{
       user, setUser, setIsAuthenticated,
-      socket, onlineUsers, 
+      socket, onlineUsers,
       chatUsers, currentChats, unseenChats, setUnseenChats,
       isReady, chatGroups, setIsReady, fetchChats, setChatGroups,
-      unseenGroupChats, setUnseenGroupChats
+      unseenGroupChats, setUnseenGroupChats, token, setToken
     }}>
       {children}
     </AuthContext.Provider>

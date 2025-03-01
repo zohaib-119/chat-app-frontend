@@ -17,12 +17,16 @@ export default function Chats() {
     const [search, setSearch] = useState('');
     const [searchedUsers, setSearchedUsers] = useState([]);
     const pathname = usePathname();
-    const { chatUsers, onlineUsers, unseenChats, chatGroups, unseenGroupChats } = useAuth();
+    const { chatUsers, onlineUsers, unseenChats, chatGroups, unseenGroupChats, token } = useAuth();
     const router = useRouter();
 
     const searchUsers = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/user/search?username=${search}`, { withCredentials: true });
+            const response = await axios.get(`http://localhost:5000/api/user/search?username=${search}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
 
             if (response.data.success) {
                 setSearchedUsers(response.data.users);
