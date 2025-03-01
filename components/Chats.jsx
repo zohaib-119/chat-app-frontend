@@ -13,6 +13,8 @@ import SearchBar from "@/components/Searchbar";
 import UserCard from "@/components/UserCard";
 import debounce from "lodash.debounce";
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL
+
 export default function Chats() {
     const [search, setSearch] = useState('');
     const [searchedUsers, setSearchedUsers] = useState([]);
@@ -22,7 +24,7 @@ export default function Chats() {
 
     const searchUsers = async () => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/user/search?username=${search}`, {
+            const response = await axios.get(`${baseURL}/api/user/search?username=${search}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
