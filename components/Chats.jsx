@@ -17,7 +17,7 @@ export default function Chats() {
     const [search, setSearch] = useState('');
     const [searchedUsers, setSearchedUsers] = useState([]);
     const pathname = usePathname();
-    const { chatUsers, onlineUsers, unseenChats, chatGroups } = useAuth();
+    const { chatUsers, onlineUsers, unseenChats, chatGroups, unseenGroupChats } = useAuth();
     const router = useRouter();
 
     const searchUsers = async () => {
@@ -117,6 +117,7 @@ export default function Chats() {
                                     <UserCard
                                         name={group.name}
                                         image={group.profile_pic}
+                                        unread={unseenGroupChats.includes(group._id)}
                                         className={isIdPresent && group._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
                                     />
                                 </div>

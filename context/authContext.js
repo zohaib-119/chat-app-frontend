@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [unseenChats, setUnseenChats] = useState([]);
   const [chatUsers, setChatUsers] = useState([]);
   const [chatGroups, setChatGroups] = useState([]);
+  const [unseenGroupChats, setUnseenGroupChats] = useState([]);
   
 
   const connectSocket = () => {
@@ -70,12 +71,15 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         setChatGroups(response.data.groups);
+        setUnseenGroupChats(response.data.unseenGroupChats)
       } else {
         setChatGroups([]);
+        setUnseenGroupChats([]);
       }
     } catch (error) {
       // console.error("Error fetching chats:", error);
       setChatGroups([]);
+      setUnseenGroupChats([]);
     }
   };
 
@@ -120,7 +124,9 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ 
       user, setUser, setIsAuthenticated,
       socket, onlineUsers, 
-      chatUsers, currentChats, unseenChats, setUnseenChats, isReady, chatGroups, setIsReady
+      chatUsers, currentChats, unseenChats, setUnseenChats,
+      isReady, chatGroups, setIsReady, fetchChats, setChatGroups,
+      unseenGroupChats, setUnseenGroupChats
     }}>
       {children}
     </AuthContext.Provider>

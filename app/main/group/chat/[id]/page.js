@@ -6,15 +6,17 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/authContext';
 import { useMessage } from '@/context/messageContext';
+import { useRouter } from 'next/navigation';
 
 export default function GroupChatWindow() {
     const [group, setGroup] = useState(null);
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const chatContainerRef = useRef(null);
-    const { user } = useAuth();
+    const { user, setUnseenGroupChats } = useAuth();
     const {messages, setMessages, setCommunicationId} = useMessage();
     const { id } = useParams();
+    const router = useRouter();
 
     function formatCustomTime(isoString) {
         const date = new Date(isoString);
@@ -38,6 +40,16 @@ export default function GroupChatWindow() {
                     setGroup(response.data.group);
                     setMessages(response.data.chatMessages);
                     setLoading(false);
+                    try {
+                        const response2 = await axios.put(`http://localhost:5000/api/group-message/seen/${id}`, {}, { withCredentials: true });
+                        if (response2.data.success) {
+                          setUnseenGroupChats(prev => prev.filter(chat => chat !== id));
+                        } else {
+                          console.error(response.data.message)
+                        }
+                      } catch (error) {
+                        console.error(error)
+                      }
                 } else {
                     toaster.create({
                         title: response.data.message,
@@ -55,7 +67,7 @@ export default function GroupChatWindow() {
 
         return () => {
             setCommunicationId(null);
-          }
+        }
     }, [id]);
 
     const scrollToBottom = () => {
@@ -75,14 +87,17 @@ export default function GroupChatWindow() {
     try {
       const response = await axios.post(`http://localhost:5000/api/group-message/add-message`, { groupId: id, text: newMessage }, { withCredentials: true });
 
-      if (response.data.success) {
-        setMessages([...messages, response.data.newMessage]);
-      }
-      else {
-        console.log('add message in group chat failed')
+      if (!response.data.success) {
+        toaster.create({
+            title: response.data.message,
+            type: 'error',
+          });
       }
     } catch (error) {
-
+        toaster.create({
+            title: error.response?.data?.message || "Something went wrong",
+            type: 'error',
+          });
     }
     setNewMessage('');
   };
@@ -105,12 +120,12 @@ export default function GroupChatWindow() {
                             className={`p-3 rounded-lg text-white max-w-xs ${message.sender._id === user._id ? "bg-blue-500" : "bg-gray-400"}`}
                         >
                             {message.sender._id !== user._id && (
-                                <span className="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">
-                                    {message.sender.name}
+                                <span className="text-sm font-semibold text-blue-600 hover:underline cursor-pointer" onClick={() => router.push(`/main/chat/${message.sender._id}`)}>
+                                    {message.sender.username}
                                 </span>
                             )}
                             <p className="">{message.text}</p>
-                            <span className="text-xs text-gray-200">{formatCustomTime(message.createdAt)}</span>
+                            <span className="text-xs text-gray-200 flex justify-end">{formatCustomTime(message.createdAt)}</span>
                         </div>
                     </div>
                 ))}

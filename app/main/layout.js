@@ -129,8 +129,8 @@ export default function Layout({ children }) {
           groupMembers
         }) => {
           try {
-            const response = await axios.post('http://localhost:5000/api/group/create', { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, {withCredentials: true});
-            if(response.data.success){
+            const response = await axios.post('http://localhost:5000/api/group/create', { name: groupName, profile_pic: groupImage, members: groupMembers.map(grp => grp._id) }, { withCredentials: true });
+            if (response.data.success) {
               toaster.create({
                 title: "Group Created",
                 type: 'success',
@@ -143,11 +143,11 @@ export default function Layout({ children }) {
             }
           } catch (error) {
             toaster.create({
-        title: error.response?.data?.message || "Something went wrong",
-        type: 'error',
-      });
+              title: error.response?.data?.message || "Something went wrong",
+              type: 'error',
+            });
           }
-          
+          setSearch('');
         }}
         search={search}
         handleSearchChange={(value) => setSearch(value)}

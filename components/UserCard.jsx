@@ -35,8 +35,9 @@ const UserCard = ({
         <Badge 
           colorScheme="red" 
           className="ml-auto px-2 py-1 text-xs rounded-full"
+          color="green"
         >
-          New
+          New Messages
         </Badge>
       )}
     </div>

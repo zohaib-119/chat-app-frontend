@@ -6,16 +6,22 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { useAuth } from '@/context/authContext';
 import { useMessage } from '@/context/messageContext';
+import { useRouter } from 'next/navigation';
 
 export default function ChatWindow() {
   const [chatPartner, setChatPartner] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const chatContainerRef = useRef(null);
-  const { unseenChats, setUnseenChats, socket, currentChats } = useAuth();
+  const { setUnseenChats, user } = useAuth();
   const {messages, setMessages, setCommunicationId} = useMessage();
+  const router = useRouter();
 
   const { id } = useParams();
+
+  if(user._id === id) {
+    router.replace('/main')
+  }
 
   // Function to scroll to bottom
   const scrollToBottom = () => {
@@ -50,7 +56,7 @@ export default function ChatWindow() {
           try {
             const response2 = await axios.put(`http://localhost:5000/api/message/seen/${id}`, {}, { withCredentials: true });
             if (response2.data.success) {
-              setUnseenChats(unseenChats.filter(chat => chat !== id));
+              setUnseenChats(prev => prev.filter(chat => chat !== id));
             } else {
               console.error(response.data.message)
             }
@@ -62,12 +68,14 @@ export default function ChatWindow() {
             title: response.data.message,
             type: 'error',
           });
+          router.replace('/main');
         }
       } catch (error) {
         toaster.create({
           title: error.response?.data?.message || "Something went wrong",
           type: 'error',
         });
+        router.replace('/main');
       }
     }
 
@@ -92,10 +100,17 @@ export default function ChatWindow() {
 
       if (response.data.success) {
         setMessages([...messages, response.data.chatMessage]);
+      } else {
+        toaster.create({
+          title: "Failed to send message",
+          type: 'error',
+        });
       }
-
     } catch (error) {
-
+      toaster.create({
+        title: error.response?.data?.message || "Something went wrong",
+        type: 'error',
+      });
     }
     setNewMessage('');
   };
@@ -107,7 +122,7 @@ export default function ChatWindow() {
   return (
     <main className="flex-1 flex flex-col bg-white shadow-md rounded-lg">
       <div className="p-4 border-b flex items-center gap-3">
-        <img src={chatPartner.profile_pic || 'avatars/user.png'} className="h-10 w-10 rounded-full" alt="User" />
+        <img src={chatPartner.profile_pic || '/avatars/user.png'} className="h-10 w-10 rounded-full" alt="User" />
         <span className="font-semibold text-lg">{chatPartner.username}</span>
       </div>
 
