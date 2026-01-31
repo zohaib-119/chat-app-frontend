@@ -1,8 +1,8 @@
 "use client";
 
-import { AiOutlineSearch, AiOutlineClose } from "react-icons/ai";
+import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
 
-const SearchBar = ({ placeholder = "Find user...", value, onChange }) => {
+const SearchBar = ({ placeholder = "Search...", value, onChange }) => {
 
   const handleChange = (e) => {
     onChange(e.target.value);
@@ -13,18 +13,27 @@ const SearchBar = ({ placeholder = "Find user...", value, onChange }) => {
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
+    <div className="relative w-full">
+      <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tertiary" />
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
-        className="w-full pl-10 pr-12 py-2 rounded-full border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 outline-none shadow-sm"
+        className="
+          w-full pl-11 pr-10 py-3 rounded-xl
+          bg-secondary border border-theme
+          text-primary placeholder:text-tertiary
+          focus:border-[rgb(var(--primary))] focus:ring-2 focus:ring-[rgb(var(--primary)/0.1)]
+          outline-none transition-all duration-200
+        "
       />
-      <AiOutlineSearch className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
       {value && (
-        <button onClick={clearInput} className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
-          <AiOutlineClose className="w-5 h-5" />
+        <button 
+          onClick={clearInput} 
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-tertiary hover:text-secondary hover:bg-surface-hover transition-colors"
+        >
+          <HiOutlineXMark className="w-5 h-5" />
         </button>
       )}
     </div>

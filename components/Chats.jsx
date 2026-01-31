@@ -1,21 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 import { toaster } from "@/components/ui/toaster";
-import { Tabs } from "@chakra-ui/react"
-import { LuFolder, LuSquareCheck, LuUser } from "react-icons/lu"
 import { useAuth } from "@/context/authContext";
 import SearchBar from "@/components/Searchbar";
 import UserCard from "@/components/UserCard";
 import debounce from "lodash.debounce";
+import { 
+  HiOutlineChatBubbleLeft, 
+  HiOutlineUserGroup, 
+  HiOutlineMagnifyingGlass,
+  HiOutlineInbox
+} from "react-icons/hi2";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL
 
-export default function Chats() {
+const tabs = [
+  { id: 'chats', label: 'Chats', icon: HiOutlineChatBubbleLeft },
+  { id: 'groups', label: 'Groups', icon: HiOutlineUserGroup },
+  { id: 'explore', label: 'Explore', icon: HiOutlineMagnifyingGlass },
+];
+
+export default function Chats({ onChatSelect }) {
+    const [activeTab, setActiveTab] = useState('chats');
     const [search, setSearch] = useState('');
     const [searchedUsers, setSearchedUsers] = useState([]);
     const pathname = usePathname();
@@ -48,7 +57,6 @@ export default function Chats() {
         }
     }
 
-    // Extract ID from URL
     const selectedId = pathname.split("/").pop();
     const isIdPresent = Boolean(selectedId);
 
@@ -62,36 +70,62 @@ export default function Chats() {
 
     useEffect(() => {
         debouncedSearch();
-
         return () => debouncedSearch.cancel();
     }, [search])
 
+    const handleNavigation = (path) => {
+        router.push(path);
+        if (onChatSelect) onChatSelect();
+    };
+
+    const EmptyState = ({ icon: Icon, title, description }) => (
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[rgb(var(--primary)/0.1)] flex items-center justify-center mb-4">
+                <Icon className="w-8 h-8 text-[rgb(var(--primary))]" />
+            </div>
+            <h3 className="font-medium text-primary mb-1">{title}</h3>
+            <p className="text-sm text-tertiary">{description}</p>
+        </div>
+    );
+
     return (
-        <Tabs.Root defaultValue="chats" variant="plain">
-            <Tabs.List bg="bg.muted" rounded="l3" p="1" width="full" display='flex' justifyContent='space-between'>
-                <Tabs.Trigger value="chats" px='2'>
-                    <LuUser />
-                    Chats
-                </Tabs.Trigger>
-                <Tabs.Trigger value="groups" px='2'>
-                    <LuFolder />
-                    Groups
-                </Tabs.Trigger>
-                <Tabs.Trigger value="explore" px='2'>
-                    <LuSquareCheck />
-                    Explore
-                </Tabs.Trigger>
-                <Tabs.Indicator rounded="l2" />
-            </Tabs.List>
-            <Tabs.Content value="chats">
-                <aside className="w-full bg-white border-r p-2 overflow-y-auto h-screen sm:w-80">
-                    <div className="space-y-2">
-                    <h3 className="ml-2 text-xl font-bold text-blue-600">Chats</h3>
+        <div className="flex flex-col h-full">
+            {/* Modern Tabs */}
+            <div className="p-3 border-b border-theme">
+                <div className="flex bg-secondary rounded-xl p-1">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`
+                                flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg
+                                text-sm font-medium transition-all duration-200
+                                ${activeTab === tab.id 
+                                    ? 'bg-surface text-primary shadow-sm' 
+                                    : 'text-tertiary hover:text-secondary'
+                                }
+                            `}
+                        >
+                            <tab.icon className="w-4 h-4" />
+                            <span className="hidden sm:inline">{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="flex-1 overflow-y-auto">
+                {/* Chats Tab */}
+                {activeTab === 'chats' && (
+                    <div className="p-3 space-y-1">
+                        <h3 className="px-2 py-2 text-xs font-semibold text-tertiary uppercase tracking-wider">
+                            Direct Messages
+                        </h3>
                         {chatUsers.length > 0 ? (
                             chatUsers.map((user) => (
                                 <div
                                     key={user._id}
-                                    onClick={() => router.push(`/main/chat/${user._id}`)}
+                                    onClick={() => handleNavigation(`/main/chat/${user._id}`)}
                                     className="cursor-pointer"
                                 >
                                     <UserCard
@@ -99,68 +133,93 @@ export default function Chats() {
                                         image={user.profile_pic}
                                         online={onlineUsers.includes(user._id)}
                                         unread={unseenChats.includes(user._id)}
-                                        className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
+                                        isSelected={isIdPresent && user._id === selectedId}
                                     />
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-500 text-center">No Chats Available</p>
+                            <EmptyState 
+                                icon={HiOutlineInbox}
+                                title="No conversations yet"
+                                description="Start chatting by exploring users"
+                            />
                         )}
                     </div>
-                </aside>
-            </Tabs.Content>
-            <Tabs.Content value="groups">
-            <aside className="w-full bg-white border-r  p-2 overflow-y-auto h-screen sm:w-80">
-                    <div className="space-y-2">
-                    <h3 className="ml-2 text-xl font-bold text-blue-600">Groups</h3>
+                )}
+
+                {/* Groups Tab */}
+                {activeTab === 'groups' && (
+                    <div className="p-3 space-y-1">
+                        <h3 className="px-2 py-2 text-xs font-semibold text-tertiary uppercase tracking-wider">
+                            Group Conversations
+                        </h3>
                         {chatGroups.length > 0 ? (
                             chatGroups.map((group) => (
                                 <div
                                     key={group._id}
-                                    onClick={() => router.push(`/main/group/chat/${group._id}`)}
+                                    onClick={() => handleNavigation(`/main/group/chat/${group._id}`)}
                                     className="cursor-pointer"
                                 >
                                     <UserCard
                                         name={group.name}
                                         image={group.profile_pic}
                                         unread={unseenGroupChats.includes(group._id)}
-                                        className={isIdPresent && group._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
+                                        isSelected={isIdPresent && group._id === selectedId}
+                                        isGroup
                                     />
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-500 text-center">No Groups Available</p>
+                            <EmptyState 
+                                icon={HiOutlineUserGroup}
+                                title="No groups yet"
+                                description="Create a group to start collaborating"
+                            />
                         )}
                     </div>
-                </aside>
-            </Tabs.Content>
-            <Tabs.Content value="explore">
-                <aside className="w-full bg-white border-r  p-2 overflow-y-auto h-screen sm:w-80">
-                <h3 className="ml-2 text-xl font-bold text-blue-600 mb-2">Explore</h3>
-                    <SearchBar
-                        value={search}
-                        onChange={(value) => setSearch(value)}
-                    />
-                    <div className="space-y-2 mt-5">
-                        {searchedUsers.length > 0 && (
-                            searchedUsers.map((user) => (
-                                <div
-                                    key={user._id}
-                                    onClick={() => router.push(`/main/chat/${user._id}`)}
-                                    className="cursor-pointer"
-                                >
-                                <UserCard
-                                    name={user.username}
-                                    image={user.profile_pic}
-                                    online={onlineUsers.includes(user._id)}
-                                    className={isIdPresent && user._id === selectedId ? "bg-gray-200" : "bg-gray-50"}
+                )}
+
+                {/* Explore Tab */}
+                {activeTab === 'explore' && (
+                    <div className="p-3 space-y-3">
+                        <SearchBar
+                            value={search}
+                            onChange={(value) => setSearch(value)}
+                            placeholder="Search users..."
+                        />
+                        <div className="space-y-1">
+                            {searchedUsers.length > 0 ? (
+                                searchedUsers.map((user) => (
+                                    <div
+                                        key={user._id}
+                                        onClick={() => handleNavigation(`/main/chat/${user._id}`)}
+                                        className="cursor-pointer"
+                                    >
+                                        <UserCard
+                                            name={user.username}
+                                            image={user.profile_pic}
+                                            online={onlineUsers.includes(user._id)}
+                                            isSelected={isIdPresent && user._id === selectedId}
+                                        />
+                                    </div>
+                                ))
+                            ) : search ? (
+                                <EmptyState 
+                                    icon={HiOutlineMagnifyingGlass}
+                                    title="No users found"
+                                    description="Try a different search term"
                                 />
-                                </div>
-                            ))
-                        )}
+                            ) : (
+                                <EmptyState 
+                                    icon={HiOutlineMagnifyingGlass}
+                                    title="Find new people"
+                                    description="Search for users to connect with"
+                                />
+                            )}
+                        </div>
                     </div>
-                </aside>
-            </Tabs.Content>
-        </Tabs.Root>
+                )}
+            </div>
+        </div>
     );
 }

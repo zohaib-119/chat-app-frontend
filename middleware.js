@@ -23,27 +23,31 @@ export async function middleware(request) {
 
         if (data.success) {
             console.log("User is authenticated");
-            // there is data.user
-            if (pathname === "/") {
+            // Redirect authenticated users away from landing/auth pages
+            if (pathname === "/" || pathname === "/auth") {
                 return NextResponse.redirect(new URL("/main", request.url));
             }
             return NextResponse.next();
         } else {
             console.log("User is not authenticated");
-            if (pathname !== "/") {
-                return NextResponse.redirect(new URL("/", request.url));
+            // Allow unauthenticated users on landing and auth pages
+            if (pathname === "/" || pathname === "/auth") {
+                return NextResponse.next();
             }
-            return NextResponse.next();
+            // Redirect unauthenticated users from protected routes to auth page
+            return NextResponse.redirect(new URL("/auth", request.url));
         }
     } catch (error) {
         console.error("Auth check failed:", error.message);
-        if (pathname !== "/") {
-            return NextResponse.redirect(new URL("/", request.url));
+        // Allow landing and auth pages on error
+        if (pathname === "/" || pathname === "/auth") {
+            return NextResponse.next();
         }
-        return NextResponse.next();
+        // Redirect to auth on error for protected routes
+        return NextResponse.redirect(new URL("/auth", request.url));
     }
 }
 
 export const config = {
-    matcher: ["/", "/main/:path*"],
+    matcher: ["/", "/auth", "/main/:path*"],
 };
